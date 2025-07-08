@@ -61,17 +61,36 @@ AFTER DELETE
 ON clientes 
 FOR EACH ROW
 BEGIN 
-  IF OLD.id IS NULL THEN 
-    INSERT INTO (id_empleado,salario_anterior,salario_nuevo)
-    VALUES (
-      -- el old agarra la insersion de la tabla anterior
-      OLD.id,
-      OLD.salario,
-      -- el new coge los valores de la tabla nueva 
-      NEW.salario
-    );
-  END IF;
+  INSERT INTO clientes_auditoria(id_cliente,nombre,email)
+  VALUES (
+    OLD.id,
+    OLD.nombre,
+    OLD.email 
+  );
 END $$
 
 DELIMITER ;
 -- probar trigger
+INSERT INTO clientes (nombre, email) VALUES ('Pedro', 'juanito@gmail.com'),('Lucía', 'nose@1234'),('Roberto', 'sadfl@1234');
+SELECT * FROM clientes;
+DELETE FROM clientes WHERE id = 2;
+SELECT * FROM clientes_auditoria;
+
+
+
+-- 4
+DELIMITER $$
+
+CREATE TRIGGER evitar_eliminar
+BEFORE DELETE 
+ON pedidos 
+FOR EACH ROW 
+BEGIN
+  IF NEW.precio < 0 THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'El producto no puede ser encargado';
+  END IF;
+END $$
+
+DELIMITER ;
+-- PROBAR trigger

@@ -144,7 +144,10 @@ CREATE TABLE clientes_auditoria (
     fecha_eliminacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-
+```sql
+-- 4
+```
+![alt text](image-2.png)
 ## **🔹 Caso 4: Restricción de Eliminación de Pedidos Pendientes**
 
 ### **Escenario:**
