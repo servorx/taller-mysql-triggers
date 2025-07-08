@@ -89,6 +89,7 @@ CREATE TABLE historial_salarios (
     FOREIGN KEY (id_empleado) REFERENCES empleados(id)
 );
 ```
+## solucion 
 ```sql
 -- 2
 DELIMITER $$
@@ -144,8 +145,30 @@ CREATE TABLE clientes_auditoria (
     fecha_eliminacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+## solucion
 ```sql
--- 4
+-- 3
+DELIMITER $$
+
+CREATE TRIGGER eliminar_cliente
+AFTER DELETE 
+ON clientes 
+FOR EACH ROW
+BEGIN 
+  INSERT INTO clientes_auditoria(id_cliente,nombre,email)
+  VALUES (
+    OLD.id,
+    OLD.nombre,
+    OLD.email 
+  );
+END $$
+
+DELIMITER ;
+-- probar trigger
+INSERT INTO clientes (nombre, email) VALUES ('Pedro', 'juanito@gmail.com'),('Lucía', 'nose@1234'),('Roberto', 'sadfl@1234');
+SELECT * FROM clientes;
+DELETE FROM clientes WHERE id = 2;
+SELECT * FROM clientes_auditoria;
 ```
 ![alt text](image-2.png)
 ## **🔹 Caso 4: Restricción de Eliminación de Pedidos Pendientes**
@@ -167,4 +190,32 @@ CREATE TABLE pedidos (
     estado ENUM('pendiente', 'completado')
 );
 ```
+## solucion
 
+```sql
+-- 4
+DELIMITER $$
+
+CREATE TRIGGER evitar_eliminar
+BEFORE DELETE 
+ON pedidos 
+FOR EACH ROW 
+BEGIN
+  IF OLD.estado = 'pendiente' THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'El producto no puede ser encargado';
+  END IF;
+END $$
+
+DELIMITER ;
+-- PROBAR trigger
+INSERT INTO pedidos (cliente, estado) VALUES 
+('Juan Pérez', 'pendiente'),
+('María López', 'completado'),
+('Carlos Ruiz', 'pendiente'),
+('Lucía Torres', 'completado');
+DELETE FROM pedidos WHERE cliente = 'Juan Pérez';
+DELETE FROM pedidos WHERE cliente = 'Lucía Torres';
+SELECT * FROM pedidos;
+```
+![alt text](image-3.png)

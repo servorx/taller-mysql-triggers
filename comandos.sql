@@ -86,7 +86,7 @@ BEFORE DELETE
 ON pedidos 
 FOR EACH ROW 
 BEGIN
-  IF NEW.precio < 0 THEN
+  IF OLD.estado = 'pendiente' THEN
     SIGNAL SQLSTATE '45000'
     SET MESSAGE_TEXT = 'El producto no puede ser encargado';
   END IF;
@@ -94,3 +94,12 @@ END $$
 
 DELIMITER ;
 -- PROBAR trigger
+INSERT INTO pedidos (cliente, estado) VALUES 
+('Juan Pérez', 'pendiente'),
+('María López', 'completado'),
+('Carlos Ruiz', 'pendiente'),
+('Lucía Torres', 'completado');
+DELETE FROM pedidos WHERE cliente = 'Juan Pérez';
+DELETE FROM pedidos WHERE cliente = 'Lucía Torres';
+SELECT * FROM pedidos;
+
